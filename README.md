@@ -100,7 +100,6 @@ Chaque feuille de données doit contenir **exactement 3 colonnes** :
 | Acte DeDepot | `0` → 0 = Spontané, 1 = Rectification, 2 = Régularisation |
 | Nature Depot | `P` → P = Provisoire, D = Définitif |
 
-> ⚠️ Écrivez **"Activite"** sans accent pour éviter les problèmes de détection.
 
 ### Conversion des montants
 
