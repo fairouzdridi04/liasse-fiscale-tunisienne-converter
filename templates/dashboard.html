@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liasse Fiscale Tunisienne - Générateur XML F6001 à F6007</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f2b3d 0%, #1a4a6f 50%, #0f2b3d 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255,255,255,0.98);
+            border-radius: 24px;
+            padding: 30px 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo-section h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #1a4a6f 0%, #2ecc71 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .logo-section p {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .badge-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, #1a4a6f 0%, #2ecc71 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 22px;
+            color: #1a4a6f;
+            border-left: 4px solid #2ecc71;
+            padding-left: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title i {
+            color: #2ecc71;
+            margin-right: 10px;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 50px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fafbfc;
+        }
+
+        .upload-area:hover {
+            border-color: #2ecc71;
+            background: #f0fdf4;
+        }
+
+        .upload-area.drag-over {
+            border-color: #2ecc71;
+            background: #e8f8f5;
+            transform: scale(1.01);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: #2ecc71;
+            margin-bottom: 15px;
+        }
+
+        /* Grille déclarant */
+        .declarant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .field-group label i {
+            margin-right: 6px;
+        }
+
+        .field-group input, .field-group select {
+            padding: 12px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .field-group input:focus, .field-group select:focus {
+            outline: none;
+            border-color: #2ecc71;
+            box-shadow: 0 0 0 3px rgba(46,204,113,0.1);
+        }
+
+        /* Forms Grid - 6 formulaires */
+        .forms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .form-card {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            position: relative;
+        }
+
+        .form-card:hover {
+            transform: translateY(-3px);
+            background: #f1f5f9;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .form-card.selected {
+            border-color: #2ecc71;
+            background: linear-gradient(135deg, #f0fdf4 0%, #e8f8f5 100%);
+        }
+
+        .form-card input {
+            margin-right: 12px;
+            transform: scale(1.1);
+        }
+
+        .form-card label {
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-card .form-code {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .form-card .form-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #1a4a6f;
+            margin-top: 8px;
+            margin-left: 28px;
+        }
+
+        .form-card .form-desc {
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-top: 4px;
+            margin-left: 28px;
+        }
+
+        /* Sélecteur F6004 */
+        .f6004-selector {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .f6004-selector-title {
+            font-weight: 700;
+            color: #1a4a6f;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 10px 16px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .radio-option:hover {
+            border-color: #2ecc71;
+            background: #f0fdf4;
+        }
+
+        .radio-option input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .radio-option .option-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .radio-option .option-desc {
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-left: 5px;
+        }
+
+        .info-note {
+            font-size: 0.7rem;
+            color: #64748b;
+            padding-top: 10px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* Boutons */
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1a4a6f 0%, #2ecc71 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(46,204,113,0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #1a4a6f;
+            color: #1a4a6f;
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            background: #1a4a6f;
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #2ecc71;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert i {
+            font-size: 1.2rem;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #2ecc71;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .alert-warning {
+            background: #fed7aa;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+
+        /* Résumé stats */
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1a4a6f;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        /* Preview XML */
+        .xml-preview {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 16px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 11px;
+            overflow-x: auto;
+            max-height: 500px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        /* File info */
+        .file-info {
+            margin-top: 20px;
+            padding: 16px;
+            background: #f0fdf4;
+            border-radius: 14px;
+            display: none;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #d1fae5;
+        }
+
+        .file-info i {
+            font-size: 2rem;
+            color: #2ecc71;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: #64748b;
+            border-radius: 30px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #1a4a6f;
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            .declarant-grid {
+                grid-template-columns: 1fr;
+            }
+            .forms-grid {
+                grid-template-columns: 1fr;
+            }
+            .btn {
+                padding: 12px 20px;
+            }
+            .radio-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- En-tête -->
+        <div class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <h1><i class="fas fa-file-invoice-dollar"></i> Liasse Fiscale Tunisienne</h1>
+                    <p>Générateur XML conforme aux normes F6001, F6002, F6003, F6004, F6005, F6007</p>
+                </div>
+                <div class="badge-container">
+                    <span class="badge"><i class="fas fa-chart-line"></i> F6001</span>
+                    <span class="badge"><i class="fas fa-chart-pie"></i> F6002</span>
+                    <span class="badge"><i class="fas fa-calculator"></i> F6003</span>
+                    <span class="badge"><i class="fas fa-exchange-alt"></i> F6004</span>
+                    <span class="badge"><i class="fas fa-balance-scale"></i> F6005</span>
+                    <span class="badge"><i class="fas fa-info-circle"></i> F6007</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertes -->
+        <div id="alert" class="alert"></div>
+
+        <!-- Upload -->
+        <div class="card">
+            <div class="card-title">
+                <span><i class="fas fa-cloud-upload-alt"></i> 1. Importer le fichier Excel</span>
+                <button id="templateBtn" class="btn btn-outline" style="padding: 8px 18px; font-size: 0.8rem;">
+                    <i class="fas fa-download"></i> Télécharger Template
+                </button>
+            </div>
+            
+            <div id="uploadArea" class="upload-area">
+                <div class="upload-icon"><i class="fas fa-file-excel"></i></div>
+                <div style="font-weight: 600; margin-bottom: 8px;">Cliquez ou déposez votre fichier Excel</div>
+                <div style="font-size: 0.8rem; color: #666;">Formats supportés: .xlsx, .xls</div>
+                <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+            </div>
+            
+            <div id="fileInfo" class="file-info">
+                <i class="fas fa-check-circle"></i>
+                <div id="fileInfoText"></div>
+            </div>
+        </div>
+
+        <!-- Informations déclarant -->
+        <div class="card">
+            <div class="card-title">
+                <span><i class="fas fa-building"></i> 2. Informations du déclarant</span>
+                <span id="extractStatus" style="font-size: 0.7rem; color: #2ecc71;"><i class="fas fa-sync-alt"></i> Auto-extrait du fichier</span>
+            </div>
+            <div class="declarant-grid">
+                <div class="field-group">
+                    <label><i class="fas fa-id-card"></i> Matricule Fiscal *</label>
+                    <input type="text" id="mat" placeholder="Ex: 960046GAM000" maxlength="13">
+                </div>
+                <div class="field-group">
+                    <label><i class="fas fa-building"></i> Raison Sociale *</label>
+                    <input type="text" id="rs" placeholder="STE ETTADHAMEN DU COMMERCE">
+                </div>
+                <div class="field-group">
+                    <label><i class="fas fa-briefcase"></i> Activité *</label>
+                    <input type="text" id="act" placeholder="COMMERCE EN GROS">
+                </div>
+                <div class="field-group">
+                    <label><i class="fas fa-map-marker-alt"></i> Adresse *</label>
+                    <input type="text" id="adr" placeholder="Adresse complète">
+                </div>
+                <div class="field-group">
+                    <label><i class="fas fa-calendar-alt"></i> Exercice *</label>
+                    <input type="text" id="ex" placeholder="AAAA">
+                </div>
+                <div class="field-group">
+                    <label><i class="fas fa-calendar-plus"></i> Date Début Exercice</label>
+                    <input type="text" id="dd" placeholder="JJ/MM/AAAA">
+                </div>
+                <div class="field-group">
+                    <label><i class="fas fa-calendar-minus"></i> Date Clôture Exercice</label>
+                    <input type="text" id="df" placeholder="JJ/MM/AAAA">
+                </div>
+                <div class="field-group">
+                    <label><i class="fas fa-file-signature"></i> Acte de Dépôt</label>
+                    <select id="ad">
+                        <option value="0">0 - Spontané</option>
+                        <option value="1">1 - Rectification</option>
+                        <option value="2">2 - Régularisation</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label><i class="fas fa-tag"></i> Nature du Dépôt</label>
+                    <select id="nd">
+                        <option value="P">P - Provisoire</option>
+                        <option value="D">D - Définitif</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sélection des formulaires -->
+        <div class="card">
+            <div class="card-title">
+                <span><i class="fas fa-check-square"></i> 3. Formulaires à générer</span>
+                <span style="font-size: 0.7rem; color: #64748b;" id="detectionSummary">6 formulaires disponibles</span>
+            </div>
+            <div class="forms-grid" id="formsGrid">
+                <div class="form-card" data-form="F6001">
+                    <input type="checkbox" id="chk_F6001" value="F6001" checked>
+                    <label for="chk_F6001">
+                        <span class="form-code"><i class="fas fa-chart-line" style="color: #2ecc71;"></i> F6001 - Bilan Actif</span>
+                    </label>
+                    <div class="form-name">Immobilisations, stocks, créances, liquidités</div>
+                </div>
+                
+                <div class="form-card" data-form="F6002">
+                    <input type="checkbox" id="chk_F6002" value="F6002" checked>
+                    <label for="chk_F6002">
+                        <span class="form-code"><i class="fas fa-chart-pie" style="color: #3498db;"></i> F6002 - Bilan Passif</span>
+                    </label>
+                    <div class="form-name">Capitaux propres, dettes, provisions</div>
+                </div>
+                
+                <div class="form-card" data-form="F6003">
+                    <input type="checkbox" id="chk_F6003" value="F6003" checked>
+                    <label for="chk_F6003">
+                        <span class="form-code"><i class="fas fa-calculator" style="color: #e74c3c;"></i> F6003 - État de Résultat</span>
+                    </label>
+                    <div class="form-name">Produits, charges, résultat net</div>
+                </div>
+                
+                <div class="form-card" data-form="F6004">
+                    <input type="checkbox" id="chk_F6004" value="F6004" checked>
+                    <label for="chk_F6004">
+                        <span class="form-code"><i class="fas fa-exchange-alt" style="color: #f39c12;"></i> F6004 - Flux de Trésorerie</span>
+                    </label>
+                    <div class="form-name">Exploitation, investissement, financement</div>
+                </div>
+                
+                <div class="form-card" data-form="F6005">
+                    <input type="checkbox" id="chk_F6005" value="F6005" checked>
+                    <label for="chk_F6005">
+                        <span class="form-code"><i class="fas fa-balance-scale" style="color: #9b59b6;"></i> F6005 - Résultat Fiscal</span>
+                    </label>
+                    <div class="form-name">Réintégrations, déductions, résultat imposable</div>
+                </div>
+                
+                <div class="form-card" data-form="F6007">
+                    <input type="checkbox" id="chk_F6007" value="F6007" checked>
+                    <label for="chk_F6007">
+                        <span class="form-code"><i class="fas fa-info-circle" style="color: #e67e22;"></i> F6007 - Autres Informations</span>
+                    </label>
+                    <div class="form-name">Notes, annexes, faits marquants</div>
+                </div>
+            </div>
+
+            <!-- Sélecteur F6004 - Modèle AUTORISÉ vs RÉFÉRENCE -->
+            <div id="f6004Selector" class="f6004-selector" style="display: none;">
+                <div class="f6004-selector-title">
+                    <i class="fas fa-exchange-alt"></i> F6004 - Flux de Trésorerie
+                    <span style="font-size: 0.7rem; font-weight: normal; color: #e67e22;">⚠️ Deux modèles détectés</span>
+                </div>
+                <div class="radio-group" id="f6004RadioGroup">
+                    <label class="radio-option">
+                        <input type="radio" name="f6004_mode" value="auto" checked>
+                        <div>
+                            <span class="option-title">📊 Modèle AUTORISÉ</span>
+                            <span class="option-desc">(synthétique - feuille "E flux auto")</span>
+                        </div>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="f6004_mode" value="ref">
+                        <div>
+                            <span class="option-title">📋 Modèle RÉFÉRENCE</span>
+                            <span class="option-desc">(détaillé - feuille "et flux ref")</span>
+                        </div>
+                    </label>
+                </div>
+                <div class="info-note">
+                    <i class="fas fa-info-circle"></i> Le modèle autorisé est simplifié (synthétique). Le modèle référence contient tous les détails de calcul. Sélectionnez celui que vous souhaitez utiliser.
+                </div>
+            </div>
+        </div>
+
+        <!-- Résumé détection -->
+        <div class="card" id="detectionCard" style="display: none;">
+            <div class="card-title">
+                <span><i class="fas fa-chart-simple"></i> 4. Analyse du fichier</span>
+                <button id="refreshAnalysisBtn" class="btn btn-outline" style="padding: 6px 14px; font-size: 0.7rem;">
+                    <i class="fas fa-sync-alt"></i> Rafraîchir
+                </button>
+            </div>
+            <div id="detectionStats" class="summary-stats"></div>
+            <div id="sheetsDetected" style="margin-top: 15px; font-size: 0.8rem; color: #64748b;"></div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="card">
+            <div class="button-group">
+                <button id="analyzeBtn" class="btn btn-outline" disabled>
+                    <i class="fas fa-search"></i> Analyser le fichier
+                </button>
+                <button id="generateBtn" class="btn btn-primary" disabled>
+                    <i class="fas fa-file-export"></i> Générer les XML
+                </button>
+            </div>
+        </div>
+
+        <!-- Résultat -->
+        <div class="card" id="resultCard" style="display: none;">
+            <div class="card-title">
+                <span><i class="fas fa-code"></i> 5. XML généré</span>
+            </div>
+            <div class="tabs" id="resultTabs"></div>
+            <div id="xmlPreview" class="xml-preview">
+                <i class="fas fa-spinner fa-pulse"></i> En attente de génération...
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h3>Génération en cours...</h3>
+            <p style="color: #666; margin-top: 10px;">Création des fichiers XML</p>
+        </div>
+    </div>
+
+    <script>
+        let currentFile = null;
+        let currentAnalysis = null;
+
+        // DOM Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileInfoText = document.getElementById('fileInfoText');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const generateBtn = document.getElementById('generateBtn');
+        const templateBtn = document.getElementById('templateBtn');
+        const refreshAnalysisBtn = document.getElementById('refreshAnalysisBtn');
+        const detectionCard = document.getElementById('detectionCard');
+        const resultCard = document.getElementById('resultCard');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const alertDiv = document.getElementById('alert');
+        const f6004Selector = document.getElementById('f6004Selector');
+
+        // Upload handlers
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+                handleFileSelect(file);
+            } else {
+                showAlert('error', 'Veuillez sélectionner un fichier Excel (.xlsx ou .xls)');
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+        
+        templateBtn.addEventListener('click', () => {
+            window.location.href = '/template';
+            showAlert('success', 'Téléchargement du template Excel...');
+        });
+        
+        refreshAnalysisBtn.addEventListener('click', () => {
+            if (currentFile) {
+                analyzeFile();
+            }
+        });
+        
+        function handleFileSelect(file) {
+            currentFile = file;
+            const sizeKB = (file.size / 1024).toFixed(2);
+            
+            fileInfo.style.display = 'flex';
+            fileInfoText.innerHTML = `
+                <strong>${file.name}</strong><br>
+                Taille: ${sizeKB} KB | Modifié: ${new Date(file.lastModified).toLocaleDateString()}
+            `;
+            
+            analyzeBtn.disabled = false;
+            generateBtn.disabled = false;
+            
+            showAlert('success', 'Fichier chargé avec succès ! Cliquez sur "Analyser" pour extraire les données.');
+            
+            detectionCard.style.display = 'none';
+            resultCard.style.display = 'none';
+            f6004Selector.style.display = 'none';
+            currentAnalysis = null;
+        }
+        
+        async function analyzeFile() {
+            if (!currentFile) return;
+            
+            showLoading(true);
+            const formData = new FormData();
+            formData.append('file', currentFile);
+            
+            try {
+                const response = await fetch('/preview', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    currentAnalysis = result;
+                    displayDetectionResults(result);
+                    detectionCard.style.display = 'block';
+                    
+                    // Vérifier et afficher le sélecteur F6004 si nécessaire
+                    checkF6004Selector(result);
+                    
+                    if (result.header) {
+                        if (result.header.mat) document.getElementById('mat').value = result.header.mat;
+                        if (result.header.rs) document.getElementById('rs').value = result.header.rs;
+                        if (result.header.act) document.getElementById('act').value = result.header.act;
+                        if (result.header.adr) document.getElementById('adr').value = result.header.adr;
+                        if (result.header.ex) document.getElementById('ex').value = result.header.ex;
+                        if (result.header.dd) document.getElementById('dd').value = result.header.dd;
+                        if (result.header.df) document.getElementById('df').value = result.header.df;
+                        if (result.header.ad) document.getElementById('ad').value = result.header.ad.trim();
+                        if (result.header.nd) document.getElementById('nd').value = result.header.nd.trim();
+                        
+                        document.getElementById('extractStatus').innerHTML = '<i class="fas fa-check-circle"></i> Données extraites du fichier';
+                    }
+                    
+                    showAlert('success', 'Analyse terminée ! Les formulaires détectés sont affichés ci-dessous.');
+                } else {
+                    showAlert('error', result.error || 'Erreur lors de l\'analyse');
+                }
+            } catch (error) {
+                showAlert('error', 'Erreur réseau: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function checkF6004Selector(result) {
+            if (!result.forms || !result.forms['F6004']) {
+                f6004Selector.style.display = 'none';
+                return;
+            }
+            
+            const sheets = result.forms['F6004'].sheets || [];
+            const hasAuto = sheets.some(s => s.toLowerCase().includes('e flux auto'));
+            const hasRef = sheets.some(s => s.toLowerCase().includes('et flux ref'));
+            
+            // Afficher le sélecteur seulement si les DEUX feuilles sont présentes
+            if (hasAuto && hasRef) {
+                f6004Selector.style.display = 'block';
+                // Par défaut, sélectionner le modèle autorisé
+                document.querySelector('input[name="f6004_mode"][value="auto"]').checked = true;
+            } else {
+                f6004Selector.style.display = 'none';
+            }
+        }
+        
+        function displayDetectionResults(result) {
+            const statsDiv = document.getElementById('detectionStats');
+            const sheetsDiv = document.getElementById('sheetsDetected');
+            
+            const forms = result.forms || {};
+            const formNames = {
+                'F6001': '📊 Bilan Actif',
+                'F6002': '📈 Bilan Passif',
+                'F6003': '🧮 État de Résultat',
+                'F6004': '🔄 Flux de Trésorerie',
+                'F6005': '⚖️ Résultat Fiscal',
+                'F6007': 'ℹ️ Autres Informations'
+            };
+            
+            let html = '';
+            let detectedCount = 0;
+            
+            for (const [key, data] of Object.entries(forms)) {
+                // Ignorer F6006 si présent
+                if (key === 'F6006') continue;
+                
+                const detected = data.detected;
+                if (detected) detectedCount++;
+                
+                html += `
+                    <div class="stat-item">
+                        <div class="stat-number">${data.non_zero || 0} <span style="font-size: 0.7rem;">/${data.total || 0}</span></div>
+                        <div class="stat-label">${formNames[key] || key}</div>
+                        <div style="font-size: 0.6rem; margin-top: 5px;">${data.sheets && data.sheets.length ? data.sheets.join(', ') : 'Non détecté'}</div>
+                    </div>
+                `;
+            }
+            
+            statsDiv.innerHTML = html;
+            
+            const summaryText = `📌 ${detectedCount}/6 formulaires détectés`;
+            document.getElementById('detectionSummary').innerHTML = summaryText;
+            sheetsDiv.innerHTML = summaryText;
+        }
+        
+        analyzeBtn.addEventListener('click', analyzeFile);
+        
+        generateBtn.addEventListener('click', async () => {
+            if (!currentFile) return;
+            
+            const selectedForms = [];
+            document.querySelectorAll('.form-card input:checked').forEach(cb => {
+                selectedForms.push(cb.value);
+            });
+            
+            if (selectedForms.length === 0) {
+                showAlert('error', 'Veuillez sélectionner au moins un formulaire à générer');
+                return;
+            }
+            
+            // Récupérer le mode F6004 si F6004 est sélectionné
+            let f6004Mode = null;
+            if (selectedForms.includes('F6004')) {
+                const selectedRadio = document.querySelector('input[name="f6004_mode"]:checked');
+                if (selectedRadio && f6004Selector.style.display === 'block') {
+                    f6004Mode = selectedRadio.value;
+                }
+            }
+            
+            showLoading(true);
+            const formData = new FormData();
+            formData.append('file', currentFile);
+            formData.append('form_keys', selectedForms.join(','));
+            if (f6004Mode) {
+                formData.append('f6004_mode', f6004Mode);
+            }
+            
+            formData.append('mat', document.getElementById('mat').value);
+            formData.append('rs', document.getElementById('rs').value);
+            formData.append('act', document.getElementById('act').value);
+            formData.append('adr', document.getElementById('adr').value);
+            formData.append('ex', document.getElementById('ex').value);
+            formData.append('dd', document.getElementById('dd').value);
+            formData.append('df', document.getElementById('df').value);
+            formData.append('ad', document.getElementById('ad').value);
+            formData.append('nd', document.getElementById('nd').value);
+            
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    
+                    if (contentType && contentType.includes('application/zip')) {
+                        const blob = await response.blob();
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        const contentDisposition = response.headers.get('content-disposition');
+                        let filename = 'liasse_fiscale.zip';
+                        if (contentDisposition) {
+                            const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                            if (match && match[1]) filename = match[1].replace(/['"]/g, '');
+                        }
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        
+                        resultCard.style.display = 'block';
+                        let filesList = selectedForms.map(f => `📄 ${f}.xml`).join('<br>');
+                        if (f6004Mode) {
+                            filesList += `<br><span style="font-size: 0.7rem; color: #f39c12;">(Modèle ${f6004Mode === 'auto' ? 'AUTORISÉ' : 'RÉFÉRENCE'} utilisé pour F6004)</span>`;
+                        }
+                        document.getElementById('xmlPreview').innerHTML = `
+                            <div style="color: #2ecc71; text-align: center; padding: 30px;">
+                                <i class="fas fa-check-circle" style="font-size: 3rem;"></i>
+                                <h3 style="margin-top: 15px;">✅ Génération terminée !</h3>
+                                <p>${selectedForms.length} fichiers XML ont été générés et compressés dans ${filename}</p>
+                                <p style="margin-top: 10px; font-size: 0.8rem;">Fichiers inclus:<br>${filesList}</p>
+                            </div>
+                        `;
+                        
+                        showAlert('success', `✅ ${selectedForms.length} fichiers XML générés`);
+                    } else {
+                        const blob = await response.blob();
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        const contentDisposition = response.headers.get('content-disposition');
+                        let filename = 'formulaire.xml';
+                        if (contentDisposition) {
+                            const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                            if (match && match[1]) filename = match[1].replace(/['"]/g, '');
+                        }
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        
+                        const text = await blob.text();
+                        const truncated = text.length > 5000 ? text.substring(0, 5000) + '\n\n... (tronqué)' : text;
+                        document.getElementById('xmlPreview').innerHTML = `<pre style="margin:0; font-family: monospace;">${escapeHtml(truncated)}</pre>`;
+                        resultCard.style.display = 'block';
+                        
+                        showAlert('success', `✅ Fichier ${filename} généré !`);
+                    }
+                } else {
+                    const error = await response.json();
+                    showAlert('error', error.error || 'Erreur lors de la génération');
+                }
+            } catch (error) {
+                showAlert('error', 'Erreur réseau: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        });
+        
+        function showAlert(type, message) {
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${message}`;
+            alertDiv.style.display = 'flex';
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        function showLoading(show) {
+            loadingOverlay.style.display = show ? 'flex' : 'none';
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Sélection des formulaires par clic sur la carte
+        document.querySelectorAll('.form-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (e.target.type !== 'checkbox') {
+                    const checkbox = card.querySelector('input');
+                    checkbox.checked = !checkbox.checked;
+                }
+            });
+            
+            const checkbox = card.querySelector('input');
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+            
+            if (checkbox.checked) {
+                card.classList.add('selected');
+            }
+        });
+    </script>
+</body>
+<<<<<<< HEAD
+</html>
+=======
+</html>
+>>>>>>> master
